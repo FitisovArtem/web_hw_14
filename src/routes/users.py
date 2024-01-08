@@ -3,11 +3,7 @@ import cloudinary.uploader
 
 from fastapi import (
     APIRouter,
-    HTTPException,
     Depends,
-    status,
-    Path,
-    Query,
     UploadFile,
     File,
 )
@@ -37,6 +33,15 @@ cloudinary.config(
     dependencies=[Depends(RateLimiter(times=2, seconds=5))],
 )
 async def get_current_user(user: User = Depends(auth_service.get_current_user)):
+    """
+    The get_current_user function is a dependency that will be injected into the
+        get_current_user endpoint. It uses the auth_service to retrieve the current user,
+        and returns it if found.
+
+    :param user: User: Specify the type of object that is returned by the auth_service
+    :return: The current user, which is stored in the database
+    :doc-author: Trelent
+    """
     return user
 
 
@@ -48,8 +53,19 @@ async def get_current_user(user: User = Depends(auth_service.get_current_user)):
 async def get_current_user(
     file: UploadFile = File(),
     user: User = Depends(auth_service.get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
+    db: AsyncSession = Depends(get_db)):
+    """
+    The get_current_user function is a dependency that will be injected into the
+        get_current_user endpoint. It takes in an UploadFile object, which is a file
+        uploaded by the user, and uses it to update their avatar URL on Cloudinary.
+
+    :param file: UploadFile: Get the file from the request
+    :param user: User: Get the current user
+    :param db: AsyncSession: Get the database connection
+    :param : Get the current user
+    :return: The current user
+    :doc-author: Trelent
+    """
     public_id = f"Web16/{user.email}"
     res = cloudinary.uploader.upload(file.file, public_id=public_id, owerite=True)
     res_url = cloudinary.CloudinaryImage(res["public_id"]).build_url(

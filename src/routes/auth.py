@@ -35,6 +35,17 @@ async def signup(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    The signup function creates a new user in the database.
+
+    :param body: UserSchema: Validate the request body
+    :param bt: BackgroundTasks: Add a task to the background queue
+    :param request: Request: Get the base_url of the application
+    :param db: AsyncSession: Pass the database session to the repository function
+    :param : Get the user's email and username to send an email
+    :return: A user object
+    :doc-author: Trelent
+    """
     exist_user = await repository_users.get_user_by_email(body.email, db)
     if exist_user:
         raise HTTPException(
@@ -50,6 +61,14 @@ async def signup(
 async def login(
     body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
 ):
+    """
+    The login function is used to authenticate a user.
+
+    :param body: OAuth2PasswordRequestForm: Get the username and password from the request body
+    :param db: AsyncSession: Get the database session from the dependency
+    :return: A jwt, which is a json object with the following keys:
+    :doc-author: Trelent
+    """
     user = await repository_users.get_user_by_email(body.username, db)
     if user is None:
         raise HTTPException(
@@ -80,6 +99,19 @@ async def refresh_token(
     credentials: HTTPAuthorizationCredentials = Security(get_refresh_token),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    The refresh_token function is used to refresh the access token.
+    It takes a refresh token as input and returns an access token.
+    The function first decodes the refresh_token to get the user's email address, then it gets that user from our database,
+    and checks if their stored refresh_token matches what was sent in with this request. If not, we raise an error and return a 401 Unauthorized response code (the client will need to log in again).
+    If everything checks out, we create new tokens for this user using our auth service module and update their record in our database with these new tokens.
+
+    :param credentials: HTTPAuthorizationCredentials: Get the access token from the request header
+    :param db: AsyncSession: Pass the database session to the function
+    :param : Get the user from the database
+    :return: A new access token and refresh token
+    :doc-author: Trelent
+    """
     token = credentials.credentials
     email = await auth_service.decode_refresh_token(token)
     user = await repository_users.get_user_by_email(email, db)
@@ -101,6 +133,14 @@ async def refresh_token(
 
 @router.get("/confirmed_email/{token}")
 async def confirmed_email(token: str, db: AsyncSession = Depends(get_db)):
+    """
+    The confirmed_email function is used to confirm a user's email address.
+
+    :param token: str: Get the token from the url
+    :param db: AsyncSession: Get the database session
+    :return: A message if the email is already confirmed or a different one if it is not
+    :doc-author: Trelent
+    """
     email = await auth_service.get_email_from_token(token)
     user = await repository_users.get_user_by_email(email, db)
     if user is None:
@@ -120,6 +160,21 @@ async def request_email(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    The request_email function is used to send an email to the user with a link that they can click on
+    to confirm their email address. The function takes in a RequestEmail object, which contains the
+    email of the user who wants to confirm their account. It then checks if there is already a confirmed
+    user with that email address, and if so returns an error message saying as much. If not, it sends them
+    an email containing a link they can click on to confirm their account.
+
+    :param body: RequestEmail: Validate the request body against
+    :param background_tasks: BackgroundTasks: Add a task to the background queue
+    :param request: Request: Get the base url of our application
+    :param db: AsyncSession: Get the database session
+    :param : Get the user's email from the database
+    :return: A message to the user
+    :doc-author: Trelent
+    """
     user = await repository_users.get_user_by_email(body.email, db)
 
     if user.confirmed:
@@ -135,6 +190,18 @@ async def request_email(
 async def request_email(
     username: str, response: Response, db: AsyncSession = Depends(get_db)
 ):
+    """
+    The request_email function is called when the user clicks on the &quot;Verify Email&quot; button.
+    It sends a verification email to the user's email address, and returns an image that says
+    &quot;Check your inbox for a verification link.&quot; The image is displayed in place of the &quot;Verify Email&quot; button.
+
+
+    :param username: str: Get the username from the url
+    :param response: Response: Return the response to the user
+    :param db: AsyncSession: Pass a database session to the function
+    :return: A fileresponse object
+    :doc-author: Trelent
+    """
     print(f"================== {username} Open verify email ===================")
     return FileResponse(
         "src/static/open_check.png",
@@ -150,6 +217,17 @@ async def reset_password(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    The reset_password function is used to reset a user's password.
+
+    :param body: RequestEmail: Get the email from the request body
+    :param bt: BackgroundTasks: Add a task to the background tasks queue
+    :param request: Request: Get the base url of the application
+    :param db: AsyncSession: Get the database session
+    :param : Get the user id from the token
+    :return: A message
+    :doc-author: Trelent
+    """
     user = await repository_users.get_user_by_email(body.email, db)
 
     if not user:
@@ -170,6 +248,22 @@ async def reset_password(
 async def confirmed_reset_password(
     token: str, password1: str, password2: str, db: AsyncSession = Depends(get_db)
 ):
+    """
+    The confirmed_reset_password function is used to reset a user's password.
+    It takes in the token, password 1 and 2 as parameters. It then checks if the passwords are equal,
+    if not it raises an HTTPException with status code 400 and detail &quot;Your passwords are not the same&quot;.
+    If they are equal it gets the email from token using auth_service.get_email_from_token(token).
+    Then it gets user by email using repository users get user by email function (repository users get
+    user by email returns a User object). Then we set that User objects password to be what was passed in
+
+
+    :param token: str: Get the email from the token
+    :param password1: str: Get the new password from the user
+    :param password2: str: Make sure that the user entered the same password twice
+    :param db: AsyncSession: Get the database session
+    :return: A dictionary with a message
+    :doc-author: Trelent
+    """
     if password1 != password2:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

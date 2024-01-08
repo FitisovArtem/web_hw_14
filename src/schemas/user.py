@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, PastDate, Field
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 
 
 class UserSchema(BaseModel):
@@ -12,9 +12,7 @@ class UserResponse(BaseModel):
     username: str
     email: EmailStr
     avatar: str
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TokenSchema(BaseModel):
