@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "web-hw-13"
+name = "web-hw-14"
 version = "0.1.0"
 description = ""
 authors = ["FitisovArtem <109963097+FitisovArtem@users.noreply.github.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "3.10"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.23"}
 fastapi = "^0.105.0"
 alembic = "^1.13.0"
@@ -30,6 +30,12 @@ pytest = "^7.4.4"
 [tool.poetry.group.dev.dependencies]
 sphinx = "^7.2.6"
 
+
+[tool.poetry.group.test.dependencies]
+httpx = "^0.26.0"
+aiosqlite = "^0.19.0"
+pytest-asyncio = "^0.23.3"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
@@ -39,3 +45,4 @@ addopts = "--doctest-modules"
 testpaths = [
     "tests",]
 pythonpath = ['.']
+filterwarnings = "ignore::DeprecationWarning"

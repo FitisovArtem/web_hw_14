@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     CLD_NAME: str = "dkprmxdfc"
     CLD_API_KEY: int = 944274644849464
     CLD_API_SECRET: str = "F1HhaBKtjBsvGNk39O22WH6plcY"
+    APP_ENV: str = "stage"
 
     try:
 

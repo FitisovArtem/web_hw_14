@@ -1,3 +1,4 @@
+from src.conf import messages
 from fastapi import (
     APIRouter,
     HTTPException,
@@ -49,7 +50,7 @@ async def signup(
     exist_user = await repository_users.get_user_by_email(body.email, db)
     if exist_user:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Account already exists"
+            status_code=status.HTTP_409_CONFLICT, detail=messages.ACCOUNT_EXIST
         )
     body.password = auth_service.get_password_hash(body.password)
     new_user = await repository_users.create_user(body, db)
@@ -77,7 +78,7 @@ async def login(
     if not user.confirmed:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email not confirmed. Check your email",
+            detail=messages.NOT_CONFIRMED_EMAIL,
         )
     if not auth_service.verify_password(body.password, user.password):
         raise HTTPException(

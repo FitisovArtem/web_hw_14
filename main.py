@@ -3,6 +3,8 @@ from pathlib import Path
 import redis.asyncio as redis
 from typing import Callable
 
+from pydantic import ConfigDict
+
 from ipaddress import ip_address
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, HTMLResponse
@@ -20,7 +22,7 @@ from src.conf.config import config
 
 app = FastAPI()
 
-banned_ips = [ip_address("192.168.1.1"), ip_address("192.168.0.1")]
+banned_ips = [ip_address("192.168.255.1"), ip_address("192.168.255.1")]
 
 origins = ["*"]
 
@@ -53,11 +55,12 @@ async def ban_ips(request: Request, call_next: Callable):
     :return: A jsonresponse with a status code of 403 and a message
     :doc-author: Trelent
     """
-    ip = ip_address(request.client.host)
-    if ip in banned_ips:
-        return JSONResponse(
-            status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You are banned"}
-        )
+    if config.APP_ENV == "production":
+        ip = ip_address(request.client.host)
+        if ip in banned_ips:
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You are banned"}
+            )
     response = await call_next(request)
     return response
 
